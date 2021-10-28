@@ -5,9 +5,11 @@ export default class Pokemon extends Component {
      constructor() {
           super();
           this.state = {
-               pokemons: []
+               pokemons: [],
+               isLoading: true
           }
      }
+
      getPokemonObject = async (id) => {
           const url = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
           const json = await url.json();
@@ -16,35 +18,35 @@ export default class Pokemon extends Component {
           return response;
      }
 
-     async componentDidMount() {
-          let data = [];
+     getPokemons = async () => {
+          const pokeArr = [];
 
-          for (let i = 1; i <= 100; i++) {
-               data.push(await this.getPokemonObject(i));
+          for (let i = 1; i <= 300; i++) {
+               pokeArr.push(await this.getPokemonObject(i))
           }
 
           this.setState({
-               pokemons: data
+               pokemons: pokeArr,
+               isLoading: false
           })
      }
 
-     getAllPokemon = () => {
-          let pokeArr = [];
-          let pokemons = this.state.pokemons;
-
-          pokemons.forEach(pokemon => {
-               pokeArr.push({ id: pokemon.id, name: pokemon.name, type: pokemon.types, image: pokemon.sprites.other['official-artwork'].front_default })
-          })
-
-          return pokeArr;
+     componentDidMount() {
+          this.getPokemons();
      }
 
      render() {
-          const pokemons = this.getAllPokemon();
-          return pokemons.map(pokemon => {
-               return (
-                    <PokeCard name={pokemon.name} image={pokemon.image} id={pokemon.id} />
-               )
-          })
+          return (
+               this.state.isLoading 
+               ?
+               <div className="isLoading"><h1>Mohon Tunggu Sebentar...</h1></div>
+               :
+               this.state.pokemons.map(pokemon => {
+                    const {front_default: image} = pokemon.sprites.other['official-artwork']
+                    const { id, name } = pokemon;
+     
+                    return <PokeCard key={id} id={id} image={image} name={name}/>
+               })
+          )
      }
 }
